@@ -118,11 +118,13 @@ exports.getAllReservations = getAllReservations;
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 
-const getAllProperties = (options, limit = 10) => {
+ const getAllProperties = function (options, limit = 10) {
   let queryParams = [];
-  let query = `SELECT properties.*, AVG(property_reviews.rating) as average_rating
-  JOIN property_reviews ON properties.id = property_id`;
-
+  let query = `
+  SELECT properties.*, AVG(property_reviews.rating) as average_rating
+  FROM properties
+  JOIN property_reviews ON properties.id = property_id
+  `;
   for (let parameter in options)  {
     if (parameter === 'city' && options[parameter]) {
       queryParams.push(`%${options[parameter]}%`)
@@ -157,7 +159,24 @@ const getAllProperties = (options, limit = 10) => {
   LIMIT $${queryParams.length};`;
 
   return pool.query(query, queryParams)
+     .then(res => res.rows)
+     .catch(err => {
+       console.log(err)
+       console.log(err.stack)
+     });
 }
+
+
+/*   return pool
+    .query(`SELECT * FROM properties LIMIT $1`, [limit])
+    .then((result) => {
+      return(result.rows);
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+}; */
+
 exports.getAllProperties = getAllProperties;
 
 
